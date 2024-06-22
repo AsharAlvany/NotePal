@@ -96,6 +96,12 @@
   .sr-imageContainer{
     width: calc(10vh - 17px)
   }
+  .sr-info > .sr-infoTitle{
+    font-size: 1.3rem;;
+  }
+  .sr-infoTag{
+    font-size: 1rem;;
+  }
 }
 
 @media screen and (max-width: 620px) {
@@ -202,7 +208,7 @@
 .blackGlass{
   background: rgba(0,0,0,0.8);
   backdrop-filter: blur(10px);
-  height: 100%;
+  height: 100vh;
   width: 100%;
   position: absolute;
   transition: all 0.5s cubic-bezier(0.645, 0.045, 0.355, 1);
@@ -448,7 +454,7 @@
 .fileDrop{
   grid-area: filedrop;
   height: 90%;
-  /* aspect-ratio: 1/1; */
+  aspect-ratio: 1/1;
   /* padding-bottom: 80%; */
   width: 80%;
   display: flex;

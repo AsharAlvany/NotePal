@@ -49,7 +49,7 @@ function CardResult(props){
   }
   useEffect(() =>{
     document.addEventListener("keydown", escFunction, false);
-    fetch(`http://72.182.168.47:4545/getFile/${props.uploadID}`)
+    fetch(`https://node.asharalvany.com/getFile/${props.uploadID}`)
     .then(response => response.blob())
     .then((data) =>{
       setImage(URL.createObjectURL(data));
@@ -96,13 +96,12 @@ function SearchResults(props){
     let [uploadArray, setUploadArray] = useState([]);
     let [activeUploads, setActiveUploads] = useState([]);
     let [numberOfPages, setNumberOfPages] = useState();
+    let [cardPerPage, setCardPerPage] = useState(getWindowDimensions().width < 768 ? 4 : 12);
     let [activePage, setActivePage] = useState(1);
-    const [windowDimensions, setWindowDimensions] = useState(getWindowDimensions());
     let [cardArray, setCardArray] = useState([]);
     let [placeholder, setPlaceholder] = useState();
     useEffect(() =>{
-      console.log(windowDimensions.width)
-      fetch('http://72.182.168.47:4545/searchFormat')
+      fetch('https://node.asharalvany.com/searchFormat')
       .then((response) => response.json())
       .then((data) => {
         // console.log(data);
@@ -112,12 +111,13 @@ function SearchResults(props){
       .catch(error => console.log(error))
     }, [])
     useEffect(()=>{
+      console.log("active page: ", activePage, " of ", uploadArray.length)
       if (uploadArray.length > 0){
-        setActiveUploads((numberOfPages > activePage ? (uploadArray.slice(15*(activePage - 1), (15*(activePage - 1)) + 15)) : (uploadArray.slice(15*(activePage - 1), uploadArray.length))));
+        setActiveUploads((numberOfPages > activePage ? (uploadArray.slice(cardPerPage*(activePage - 1), (cardPerPage*(activePage - 1)) + cardPerPage)) : (uploadArray.slice(cardPerPage*(activePage - 1), uploadArray.length))));
       }
-    }, [activePage, uploadArray])
+    }, [activePage, uploadArray, cardPerPage])
     useEffect(() =>{
-      fetch(`http://72.182.168.47:4545/getFileInfo/${JSON.stringify(activeUploads)}`)
+      fetch(`https://node.asharalvany.com/getFileInfo/${JSON.stringify(activeUploads)}`)
       .then((response)=> response.json())
         .then((data) =>{
           setCardArray([])
@@ -130,11 +130,11 @@ function SearchResults(props){
       console.log(`Search Value: ${searchValue}`);
       setCardArray([])
       if(searchValue != null){
-        fetch(`http://72.182.168.47:4545/getUploadID/${searchValue["label"]}`)
+        fetch(`https://node.asharalvany.com/getUploadID/${searchValue["label"]}`)
         .then((response) => response.json())
         .then((data) => {
           setUploadArray(data);
-          setNumberOfPages(Math.ceil(data.length/15));
+          setNumberOfPages(Math.ceil(data.length/cardPerPage));
           // setActiveUploads((numberOfPages > activePage ? (uploadArray.slice(15*(activePage - 1), (15*(activePage - 1)) + 15)) : (uploadArray.slice(15*(activePage - 1), uploadArray.length))));
           // console.log(`active uploads: ${activeUploads}\nactive page: ${activePage}\nnumber of pages: ${numberOfPages}\nupload array: ${uploadArray.slice(15*(activePage - 1), uploadArray.length)}\ndata: ${data}`);
           // return data;
@@ -154,6 +154,18 @@ function SearchResults(props){
         setCardArray([])
       }
     }, [searchValue])
+
+    function handleLeftIcon(){
+      if (1 < activePage){
+        setActivePage(activePage-1);
+      }
+    } 
+    function handleRightIcon(){
+      if (numberOfPages > activePage){
+        setActivePage(activePage+1);
+      }
+    } 
+
     return(
         <div className="sr-app">
           <div className="sr-header">
@@ -214,8 +226,8 @@ function SearchResults(props){
               }
             </div>
             <div className='sr-headerFiller'>
-              <KeyboardArrowLeftIcon style = {{fontSize: windowDimensions.width > 620 ? "4rem" : "2rem"}} className={`sr-icon ${activePage > 1 ? null : "sr-disabled"}`}/>
-              <KeyboardArrowRightIcon style = {{fontSize: windowDimensions.width > 620 ? "4rem" : "2rem"}} className={`sr-icon ${numberOfPages > activePage ? null : "sr-disabled"}`}/>
+              <KeyboardArrowLeftIcon onClick={handleLeftIcon} style = {{fontSize: getWindowDimensions().width > 620 ? "4rem" : "2rem"}} className={`sr-icon ${activePage > 1 ? null : "sr-disabled"}`}/>
+              <KeyboardArrowRightIcon onClick={handleRightIcon} style = {{fontSize: getWindowDimensions().width > 620 ? "4rem" : "2rem"}} className={`sr-icon ${numberOfPages > activePage ? null : "sr-disabled"}`}/>
             </div>
           </div>
           <div className="sr-sep"></div>

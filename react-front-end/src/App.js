@@ -40,7 +40,7 @@ function UploadInput(props) {
   let inputRef = useRef();
   const [options, setOptions] = useState([]);
   useEffect(() => {
-    fetch(`http://72.182.168.47:4545/generalInformation/${props.url}`)
+    fetch(`https://node.asharalvany.com/generalInformation/${props.url}`)
     .then((response) => response.json())
     .then((data) => {
     console.log(data);
@@ -129,7 +129,7 @@ function App(props) {
         clearUploads();
       }
     })
-    fetch('http://72.182.168.47:4545/searchFormat')
+    fetch('https://node.asharalvany.com/searchFormat')
     .then((response) => response.json())
     .then((data) => {
       console.log(data);
@@ -150,9 +150,15 @@ function App(props) {
     e.preventDefault();
     e.stopPropagation();
     
-// filename.split('.').pop()
-
+    // filename.split('.').pop()
+    
     const {files} = e.dataTransfer;
+    console.log(files[0].size)
+    if(files[0].size > 10e6){
+      setNotification(true);
+      setMessageValue("File is too large!")
+      return
+    }
     console.log(files[0]["name"].split('.').pop().toLowerCase());
     let file_ext = files[0]["name"].split('.').pop().toLowerCase();
     if (files && files.length == 1 && (file_ext === "png" || file_ext === "jpg")) {
@@ -183,21 +189,27 @@ function App(props) {
       setMessageValue("Please attach a file!")
       return
     }
-    if (!rawFile){
+    if (rawFile.size > 10e6){
       setNotification(true);
-      setMessageValue("Please attach a file!")
+      setMessageValue("File size is too large!")
       return
     }
-    if (!rawFile){
+    if (!coursePrefix){
       setNotification(true);
-      setMessageValue("Please attach a file!")
+      setMessageValue("Please enter a course prefix!")
+      return
+    }
+    if (!classNumber){
+      setNotification(true);
+      setMessageValue("Please enter a course number!")
       return
     }
     setLoading(true);
+    console.log("file size:", rawFile)
     var data = new FormData();
     data.append('file', rawFile)
     console.log(instructor)
-    fetch(`http://72.182.168.47:4545/uploadSearchParameters/${coursePrefix};${classNumber};${section};${instructor.replaceAll(';', '%3B')};${term};${tags}`, {
+    fetch(`https://node.asharalvany.com/uploadSearchParameters/${coursePrefix};${classNumber};${section};${instructor.replaceAll(';', '%3B')};${term};${tags}`, {
       method: 'POST',
       body: data
     }).then((response) =>{
@@ -209,7 +221,7 @@ function App(props) {
         clearForm();
       }
     }).catch((error) =>{
-      console.log(`http://72.182.168.47:4545/uploadSearchParameters/${coursePrefix}-${classNumber}-${section}-${instructor}-${term}-${tags}`)
+      console.log(`https://node.asharalvany.com/uploadSearchParameters/${coursePrefix}-${classNumber}-${section}-${instructor}-${term}-${tags}`)
     }).finally(() => setLoading(false))
   }
   return (
@@ -319,7 +331,14 @@ function App(props) {
               </div>
               : 
               <div onDrop={handleDrop} onDragOver={handleDragOver} className="fileDrop">
-                <input accept="image/png, image/jpg, image/jpeg" onInput={(e) => {setFileReceived(true);setFile(URL.createObjectURL(e.target.files[0]));setRawFile(e.target.files[0]);console.log(e.target.files[0])}} ref={input => uploadRef = input} hidden type='file'/>
+                <input accept="image/png, image/jpg, image/jpeg" onInput={(e) => {
+                  console.log(e.target.files[0].size)
+                  if(e.target.files[0].size > 10e6){
+                    setNotification(true);
+                    setMessageValue("File is too large!")
+                    return
+                  }
+                  setFileReceived(true);setFile(URL.createObjectURL(e.target.files[0]));setRawFile(e.target.files[0]);console.log(e.target.files[0])}} ref={input => uploadRef = input} hidden type='file'/>
                 <div className="callDrop">Drop Your Files Here</div>
                 <div className="imageIconContainer">
                     <ImageIcon style={{fontSize:'98px', color:'#3B1910'}}/>
